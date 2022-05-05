@@ -1,11 +1,7 @@
 package com.zlmaker.payment.service;
 
-import com.alibaba.fastjson.JSONObject;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * 微信支付服务接口
@@ -104,12 +100,11 @@ public interface WxPayService {
 
     /**
      * 处理通知
+     *
      * @param request
-     * @param response
-     * @param requestBody
      * @return
      */
-    String handleNotify(HttpServletRequest request, HttpServletResponse response, JSONObject requestBody);
+    String handleNotify(HttpServletRequest request);
 
     /**
      * 处理get请求
@@ -120,9 +115,18 @@ public interface WxPayService {
 
     /**
      * 处理post请求
+     *
      * @param uri
      * @param requestData
      * @return
      */
     String handlePostRequest(String uri, String requestData) throws IOException;
+
+    /**
+     * 处理不需要验签的get请求
+     *
+     * @param downloadUrl
+     * @return
+     */
+    String handleGetRequestForNoSign(String downloadUrl) throws IOException;
 }

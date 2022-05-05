@@ -13,6 +13,7 @@ import com.zlmaker.payment.service.OrderInfoService;
 import com.zlmaker.payment.service.PaymentInfoService;
 import com.zlmaker.payment.service.RefundInfoService;
 import com.zlmaker.payment.service.WxPayService;
+import com.zlmaker.payment.util.HttpUtil;
 import com.zlmaker.payment.util.WxTotalFeeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -55,6 +55,8 @@ public class WxPayServiceImpl
     private OrderInfoService orderInfoService;
     @Autowired
     private CloseableHttpClient wxPayClient;
+    @Autowired
+    private CloseableHttpClient wxPayNoSignClient;
     @Autowired
     private PaymentInfoService paymentInfoService;
     @Autowired
@@ -348,19 +350,18 @@ public class WxPayServiceImpl
     @Override
     public String downloadBill(String billDate, String type) throws Exception {
         String downloadUrl = this.queryBill(billDate, type);
-        return this.handleGetRequest(downloadUrl);
+        return this.handleGetRequestForNoSign(downloadUrl);
     }
 
     /**
      * 处理通知
      *
      * @param request
-     * @param response
-     * @param requestBody
      * @return
      */
     @Override
-    public String handleNotify(HttpServletRequest request, HttpServletResponse response, JSONObject requestBody) {
+    public String handleNotify(HttpServletRequest request) {
+        String requestBody = HttpUtil.readData(request);
         // 处理请求参数
         String serial = request.getHeader("Wechatpay-Serial");
         String nonce = request.getHeader("Wechatpay-Nonce");
@@ -371,7 +372,7 @@ public class WxPayServiceImpl
                 .withSerialNumber(serial)
                 .withNonce(nonce).withTimestamp(timestamp)
                 .withSignature(signature)
-                .withBody(requestBody.toJSONString()).build();
+                .withBody(requestBody).build();
         // 定义回调通知
         Notification notification;
         // 签名的验证
@@ -439,6 +440,31 @@ public class WxPayServiceImpl
                 // 处理失败
                 log.error("请求失败");
                 throw new IOException("请求失败");
+            }
+            return responseBody;
+        }
+    }
+
+    /**
+     * 处理不需要验签的get请求
+     *
+     * @param downloadUrl
+     * @return
+     */
+    @Override
+    public String handleGetRequestForNoSign(String downloadUrl) throws IOException {
+        HttpGet httpGet = new HttpGet(downloadUrl);
+        httpGet.setHeader("Accept", "application/json");
+        // 完成签名并执行请求
+        try (CloseableHttpResponse response = wxPayNoSignClient.execute(httpGet)) {
+            // 获取响应体
+            String responseBody = EntityUtils.toString(response.getEntity());
+            // 获取响应状态码
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != GlobalConstant.STATUS_CODE_SUCCESS && statusCode != GlobalConstant.STATUS_CODE_SUCCESS_NO_BODY) {
+                // 处理失败
+                log.error("查询失败");
+                throw new IOException("查询失败");
             }
             return responseBody;
         }

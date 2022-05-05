@@ -37,10 +37,10 @@ public class WxPayController {
 
     @ApiOperation("订单通知")
     @PostMapping("/native/notify")
-    public String nativeNotify(HttpServletRequest request, HttpServletResponse response, @RequestBody JSONObject requestBody) {
+    public String nativeNotify(HttpServletRequest request, HttpServletResponse response) {
         JSONObject responseObject = new JSONObject();
         // 处理通知
-        String decryptData = wxPayService.handleNotify(request, response, requestBody);
+        String decryptData = wxPayService.handleNotify(request);
         if (decryptData == null) {
             // 设置失败响应状态码,封装响应体
             response.setStatus(500);
@@ -88,10 +88,10 @@ public class WxPayController {
 
     @ApiOperation("退款结果通知")
     @PostMapping("/refund/notify")
-    public String refundNotify(HttpServletRequest request, HttpServletResponse response, @RequestBody JSONObject requestBody) {
+    public String refundNotify(HttpServletRequest request, HttpServletResponse response) {
         JSONObject responseObject = new JSONObject();
         // 处理通知
-        String decryptData = wxPayService.handleNotify(request, response, requestBody);
+        String decryptData = wxPayService.handleNotify(request);
         if (decryptData == null) {
             // 设置失败响应状态码,封装响应体
             response.setStatus(500);
