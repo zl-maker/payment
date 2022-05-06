@@ -1,6 +1,7 @@
 package com.zlmaker.payment.task;
 
 import com.zlmaker.payment.enums.PayType;
+import com.zlmaker.payment.exception.WxPayApiException;
 import com.zlmaker.payment.pojo.OrderInfo;
 import com.zlmaker.payment.service.OrderInfoService;
 import com.zlmaker.payment.service.WxPayService;
@@ -31,7 +32,7 @@ public class WxPayTask {
      * 从第0秒开始每隔30秒执行一次，查询创建超过5分钟，并且未支付的订单
      */
     @Scheduled(cron = "0/30 * * * * ?")
-    public void orderConfirm() throws IOException {
+    public void orderConfirm() throws WxPayApiException, IOException {
         List<OrderInfo> orderInfoList = orderInfoService.getNoPayOrderByDuration(2, PayType.WXPAY.getType());
         System.out.println("===========遍历微信支付超时订单========");
         for (OrderInfo orderInfo : orderInfoList) {

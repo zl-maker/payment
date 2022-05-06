@@ -6,10 +6,12 @@ import com.wechat.pay.contrib.apache.httpclient.auth.Verifier;
 import com.wechat.pay.contrib.apache.httpclient.auth.WechatPay2Credentials;
 import com.wechat.pay.contrib.apache.httpclient.auth.WechatPay2Validator;
 import com.wechat.pay.contrib.apache.httpclient.cert.CertificatesManager;
+import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
+import com.wechat.pay.contrib.apache.httpclient.exception.NotFoundException;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationHandler;
 import com.wechat.pay.contrib.apache.httpclient.util.PemUtil;
+import com.zlmaker.payment.exception.WxPayApiException;
 import lombok.Data;
-import lombok.SneakyThrows;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +19,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 
 
@@ -73,17 +78,19 @@ public class WxPayConfig {
     /**
      * 获取商户的私钥文件
      */
-    @SneakyThrows
-    private PrivateKey getPrivateKey() {
-        return PemUtil.loadPrivateKey(new FileInputStream(privateKeyPath));
+    private PrivateKey getPrivateKey() throws WxPayApiException {
+        try {
+            return PemUtil.loadPrivateKey(new FileInputStream(privateKeyPath));
+        } catch (FileNotFoundException e) {
+            throw new WxPayApiException(e.getMessage());
+        }
     }
 
     /**
      * 获取签名验证器
      */
-    @SneakyThrows
     @Bean
-    public Verifier getVerifier() {
+    public Verifier getVerifier() throws WxPayApiException {
         // 获取私钥
         PrivateKey privateKey = getPrivateKey();
 
@@ -97,10 +104,19 @@ public class WxPayConfig {
         WechatPay2Credentials wechatPay2Credentials = new WechatPay2Credentials(mchId, privateKeySigner);
 
         // 向证书管理器增加需要自动更新平台证书的商户信息
-        certificatesManager.putMerchant(mchId, wechatPay2Credentials, apiV3Key.getBytes(StandardCharsets.UTF_8));
+        try {
+            certificatesManager.putMerchant(mchId, wechatPay2Credentials, apiV3Key.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException | GeneralSecurityException | HttpCodeException e) {
+            throw new WxPayApiException(e.getMessage());
+        }
+
 
         // 从证书管理器中获取verifier
-        return certificatesManager.getVerifier(mchId);
+        try {
+            return certificatesManager.getVerifier(mchId);
+        } catch (NotFoundException e) {
+            throw new WxPayApiException(e.getMessage());
+        }
     }
 
 
@@ -108,7 +124,7 @@ public class WxPayConfig {
      * 获取http请求对象
      */
     @Bean(name = "wxPayClient")
-    public CloseableHttpClient getWxPayClient(Verifier verifier) {
+    public CloseableHttpClient getWxPayClient(Verifier verifier) throws WxPayApiException {
 
         // 获得私钥
         PrivateKey privateKey = getPrivateKey();
@@ -124,7 +140,7 @@ public class WxPayConfig {
      * 获取HttpClient，无需进行应答签名验证，跳过验签的流程
      */
     @Bean(name = "wxPayNoSignClient")
-    public CloseableHttpClient getWxPayNoSignClient() {
+    public CloseableHttpClient getWxPayNoSignClient() throws WxPayApiException {
 
         //获取商户私钥
         PrivateKey privateKey = getPrivateKey();

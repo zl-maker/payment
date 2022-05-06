@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ApiExceptionHandler {
     @ExceptionHandler(AlipayApiException.class)
     public ResponseResult aliPayApiExceptionHandle(AlipayApiException e) {
-        return ResponseResult.error(e.getMessage());
+        return ResponseResult.error(e.getErrMsg());
     }
 
     @ExceptionHandler(WxPayApiException.class)
     public ResponseResult wxPayApiExceptionHandle(WxPayApiException e) {
-        return ResponseResult.error(e.getMessage());
+        return ResponseResult.error(e.getErrMsg());
     }
 }

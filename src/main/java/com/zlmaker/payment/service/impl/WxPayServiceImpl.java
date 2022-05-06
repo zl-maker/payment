@@ -1,12 +1,15 @@
 package com.zlmaker.payment.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.wechat.pay.contrib.apache.httpclient.exception.ParseException;
+import com.wechat.pay.contrib.apache.httpclient.exception.ValidationException;
 import com.wechat.pay.contrib.apache.httpclient.notification.Notification;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationHandler;
 import com.wechat.pay.contrib.apache.httpclient.notification.NotificationRequest;
 import com.zlmaker.payment.config.WxPayConfig;
 import com.zlmaker.payment.constant.GlobalConstant;
 import com.zlmaker.payment.enums.*;
+import com.zlmaker.payment.exception.WxPayApiException;
 import com.zlmaker.payment.pojo.OrderInfo;
 import com.zlmaker.payment.pojo.RefundInfo;
 import com.zlmaker.payment.service.OrderInfoService;
@@ -71,8 +74,8 @@ public class WxPayServiceImpl
      * @return String
      */
     @Override
-    @Transactional
-    public String nativePay(Long productId) throws Exception {
+    @Transactional(rollbackFor = WxPayApiException.class)
+    public String nativePay(Long productId) throws WxPayApiException {
         //生成订单
         OrderInfo orderInfo = orderInfoService.createOrderByProductId(productId, PayType.WXPAY.getType());
         String orderNo = orderInfo.getOrderNo();
@@ -113,7 +116,6 @@ public class WxPayServiceImpl
         result.put("codeUrl", codeUrl);
         result.put("orderNo", orderNo);
         return result.toJSONString();
-
     }
 
     /**
@@ -122,7 +124,6 @@ public class WxPayServiceImpl
      * @param decryptData
      */
     @Override
-    @Transactional
     public void handleOrder(String decryptData) {
         JSONObject orderData = JSONObject.parseObject(decryptData);
         String orderNo = orderData.getString("out_trade_no");
@@ -142,7 +143,6 @@ public class WxPayServiceImpl
             } finally {
                 lock.unlock();
             }
-
         }
     }
 
@@ -152,8 +152,8 @@ public class WxPayServiceImpl
      * @param orderNo
      */
     @Override
-    @Transactional
-    public void cancelOrder(String orderNo) throws IOException {
+    @Transactional(rollbackFor = WxPayApiException.class)
+    public void cancelOrder(String orderNo) throws WxPayApiException {
         // 关闭订单
         this.closeOrder(orderNo);
         // 更新商户端的订单状态
@@ -166,7 +166,7 @@ public class WxPayServiceImpl
      * @param orderNo
      */
     @Override
-    public void closeOrder(String orderNo) throws IOException {
+    public void closeOrder(String orderNo) throws WxPayApiException {
         // 创建远程请求对象
         String uri = String.format(WxPayApiType.CLOSE_ORDER_BY_NO.getType(), orderNo);
         uri = wxPayConfig.getDomain().concat(uri);
@@ -185,7 +185,7 @@ public class WxPayServiceImpl
      * @return String
      */
     @Override
-    public String queryOrder(String orderNo) throws IOException {
+    public String queryOrder(String orderNo) throws WxPayApiException {
         // 创建远程请求对象
         String uri = String.format(WxPayApiType.ORDER_QUERY_BY_NO.getType(), orderNo);
         uri = wxPayConfig.getDomain().concat(uri).concat("?mchid=").concat(wxPayConfig.getMchId());
@@ -201,8 +201,8 @@ public class WxPayServiceImpl
      * @param orderNo
      */
     @Override
-    @Transactional
-    public void checkOrderStatus(String orderNo) throws IOException {
+    @Transactional(rollbackFor = WxPayApiException.class)
+    public void checkOrderStatus(String orderNo) throws WxPayApiException {
         String result = this.queryOrder(orderNo);
         JSONObject resultObject = JSONObject.parseObject(result);
         // 获取微信支付端订单状态
@@ -228,8 +228,8 @@ public class WxPayServiceImpl
      * @param reason
      */
     @Override
-    @Transactional
-    public void refund(String orderNo, String reason) throws IOException {
+    @Transactional(rollbackFor = WxPayApiException.class)
+    public void refund(String orderNo, String reason) throws WxPayApiException {
         // 根据订单编号创建退款单
         RefundInfo refundInfo = refundInfoService.createRefundByOrderNo(orderNo, reason);
 
@@ -267,8 +267,6 @@ public class WxPayServiceImpl
 
         // 更新退款单
         refundInfoService.updateRefund(responseBody);
-
-
     }
 
     /**
@@ -278,7 +276,7 @@ public class WxPayServiceImpl
      * @return
      */
     @Override
-    public String queryRefund(String refundNo) throws IOException {
+    public String queryRefund(String refundNo) throws WxPayApiException {
         // 创建远程请求对象
         String uri = String.format(WxPayApiType.DOMESTIC_REFUNDS_QUERY.getType(), refundNo);
         uri = wxPayConfig.getDomain().concat(uri);
@@ -291,7 +289,6 @@ public class WxPayServiceImpl
      * @param decryptData
      */
     @Override
-    @Transactional
     public void handleRefund(String decryptData) {
         JSONObject orderData = JSONObject.parseObject(decryptData);
         String orderNo = orderData.getString("out_trade_no");
@@ -323,14 +320,14 @@ public class WxPayServiceImpl
      * @return
      */
     @Override
-    public String queryBill(String billDate, String type) throws Exception {
+    public String queryBill(String billDate, String type) throws WxPayApiException {
         String uri;
         if (GlobalConstant.BILL_TYPE_TRADEBILL.equals(type)) {
             uri = WxPayApiType.TRADE_BILLS.getType();
         } else if (GlobalConstant.BILL_TYPE_FUNDFLOWBILL.equals(type)) {
             uri = WxPayApiType.FUND_FLOW_BILLS.getType();
         } else {
-            throw new IOException("不支持的帐单类型");
+            throw new WxPayApiException("不支持的帐单类型");
         }
         uri = wxPayConfig.getDomain().concat(uri).concat("?bill_date=").concat(billDate);
 
@@ -348,7 +345,7 @@ public class WxPayServiceImpl
      * @return
      */
     @Override
-    public String downloadBill(String billDate, String type) throws Exception {
+    public String downloadBill(String billDate, String type) throws WxPayApiException {
         String downloadUrl = this.queryBill(billDate, type);
         return this.handleGetRequestForNoSign(downloadUrl);
     }
@@ -360,7 +357,7 @@ public class WxPayServiceImpl
      * @return
      */
     @Override
-    public String handleNotify(HttpServletRequest request) {
+    public String handleNotify(HttpServletRequest request) throws WxPayApiException {
         String requestBody = HttpUtil.readData(request);
         // 处理请求参数
         String serial = request.getHeader("Wechatpay-Serial");
@@ -368,19 +365,16 @@ public class WxPayServiceImpl
         String timestamp = request.getHeader("Wechatpay-Timestamp");
         String signature = request.getHeader("Wechatpay-Signature");
         // 构造微信请求体
-        NotificationRequest wxRequest = new NotificationRequest.Builder()
-                .withSerialNumber(serial)
-                .withNonce(nonce).withTimestamp(timestamp)
-                .withSignature(signature)
-                .withBody(requestBody).build();
+        NotificationRequest wxRequest = new NotificationRequest.Builder().withSerialNumber(serial).withNonce(nonce).withTimestamp(timestamp).withSignature(signature).withBody(requestBody).build();
         // 定义回调通知
         Notification notification;
         // 签名的验证
         try {
             notification = notificationHandler.parse(wxRequest);
-        } catch (Exception e) {
-            throw new RuntimeException("签名验证失败");
+        } catch (ValidationException | ParseException e) {
+            throw new WxPayApiException(e.getMessage());
         }
+
         // 从回调通知中获取解密报文
         return notification.getDecryptData();
     }
@@ -392,7 +386,7 @@ public class WxPayServiceImpl
      * @return
      */
     @Override
-    public String handleGetRequest(String uri) throws IOException {
+    public String handleGetRequest(String uri) throws WxPayApiException {
         HttpGet httpGet = new HttpGet(uri);
         httpGet.setHeader("Accept", "application/json");
         // 完成签名并执行请求
@@ -404,9 +398,11 @@ public class WxPayServiceImpl
             if (statusCode != GlobalConstant.STATUS_CODE_SUCCESS && statusCode != GlobalConstant.STATUS_CODE_SUCCESS_NO_BODY) {
                 // 处理失败
                 log.error("查询失败");
-                throw new IOException("查询失败");
+                throw new WxPayApiException("查询失败");
             }
             return responseBody;
+        } catch (IOException e) {
+            throw new WxPayApiException(e.getMessage());
         }
     }
 
@@ -418,7 +414,7 @@ public class WxPayServiceImpl
      * @return
      */
     @Override
-    public String handlePostRequest(String uri, String requestData) throws IOException {
+    public String handlePostRequest(String uri, String requestData) throws WxPayApiException {
         String responseBody = null;
         HttpPost httpPost = new HttpPost(uri);
         // 封装数据到请求体
@@ -439,9 +435,11 @@ public class WxPayServiceImpl
             if (statusCode != GlobalConstant.STATUS_CODE_SUCCESS && statusCode != GlobalConstant.STATUS_CODE_SUCCESS_NO_BODY) {
                 // 处理失败
                 log.error("请求失败");
-                throw new IOException("请求失败");
+                throw new WxPayApiException("请求失败");
             }
             return responseBody;
+        } catch (IOException e) {
+            throw new WxPayApiException(e.getMessage());
         }
     }
 
@@ -452,7 +450,7 @@ public class WxPayServiceImpl
      * @return
      */
     @Override
-    public String handleGetRequestForNoSign(String downloadUrl) throws IOException {
+    public String handleGetRequestForNoSign(String downloadUrl) throws WxPayApiException {
         HttpGet httpGet = new HttpGet(downloadUrl);
         httpGet.setHeader("Accept", "application/json");
         // 完成签名并执行请求
@@ -464,9 +462,11 @@ public class WxPayServiceImpl
             if (statusCode != GlobalConstant.STATUS_CODE_SUCCESS && statusCode != GlobalConstant.STATUS_CODE_SUCCESS_NO_BODY) {
                 // 处理失败
                 log.error("查询失败");
-                throw new IOException("查询失败");
+                throw new WxPayApiException("查询失败");
             }
             return responseBody;
+        } catch (IOException e) {
+            throw new WxPayApiException(e.getMessage());
         }
     }
 }

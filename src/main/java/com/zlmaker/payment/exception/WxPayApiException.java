@@ -1,6 +1,6 @@
 package com.zlmaker.payment.exception;
 
-import com.alipay.api.AlipayApiErrorEnum;
+import com.zlmaker.payment.enums.WxPayApiError;
 
 /**
  * 微信支付api异常类
@@ -23,7 +23,7 @@ public class WxPayApiException
         super(message, cause);
     }
 
-    public WxPayApiException(AlipayApiErrorEnum messageEnum, Throwable cause) {
+    public WxPayApiException(WxPayApiError messageEnum, Throwable cause) {
         super(messageEnum.getErrMsg(), cause);
     }
 
@@ -31,7 +31,7 @@ public class WxPayApiException
         super(message);
     }
 
-    public WxPayApiException(AlipayApiErrorEnum messageEnum) {
+    public WxPayApiException(WxPayApiError messageEnum) {
         super(messageEnum.getErrMsg());
     }
 

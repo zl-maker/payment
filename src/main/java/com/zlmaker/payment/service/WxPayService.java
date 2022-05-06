@@ -1,7 +1,8 @@
 package com.zlmaker.payment.service;
 
+import com.zlmaker.payment.exception.WxPayApiException;
+
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * 微信支付服务接口
@@ -19,7 +20,7 @@ public interface WxPayService {
      * @param productId
      * @return String
      */
-    String nativePay(Long productId) throws Exception;
+    String nativePay(Long productId) throws WxPayApiException;
 
     /**
      * 处理订单
@@ -33,14 +34,14 @@ public interface WxPayService {
      *
      * @param orderNo
      */
-    void cancelOrder(String orderNo) throws IOException;
+    void cancelOrder(String orderNo) throws WxPayApiException;
 
     /**
      * 关闭订单
      *
      * @param orderNo
      */
-    void closeOrder(String orderNo) throws IOException;
+    void closeOrder(String orderNo) throws WxPayApiException;
 
     /**
      * 查询订单：测试订单状态
@@ -48,14 +49,14 @@ public interface WxPayService {
      * @param orderNo
      * @return String
      */
-    String queryOrder(String orderNo) throws IOException;
+    String queryOrder(String orderNo) throws WxPayApiException;
 
     /**
      * 检查订单状态
      *
      * @param orderNo
      */
-    void checkOrderStatus(String orderNo) throws IOException;
+    void checkOrderStatus(String orderNo) throws WxPayApiException;
 
     /**
      * 退款
@@ -63,7 +64,7 @@ public interface WxPayService {
      * @param orderNo
      * @param reason
      */
-    void refund(String orderNo, String reason) throws IOException;
+    void refund(String orderNo, String reason) throws WxPayApiException;
 
     /**
      * 查询退款
@@ -71,7 +72,7 @@ public interface WxPayService {
      * @param refundNo
      * @return
      */
-    String queryRefund(String refundNo) throws IOException;
+    String queryRefund(String refundNo) throws WxPayApiException;
 
     /**
      * 处理退款单
@@ -87,7 +88,7 @@ public interface WxPayService {
      * @param type
      * @return
      */
-    String queryBill(String billDate, String type) throws Exception;
+    String queryBill(String billDate, String type) throws WxPayApiException;
 
     /**
      * 下载帐单
@@ -96,7 +97,7 @@ public interface WxPayService {
      * @param type
      * @return
      */
-    String downloadBill(String billDate, String type) throws Exception;
+    String downloadBill(String billDate, String type) throws WxPayApiException;
 
     /**
      * 处理通知
@@ -104,14 +105,15 @@ public interface WxPayService {
      * @param request
      * @return
      */
-    String handleNotify(HttpServletRequest request);
+    String handleNotify(HttpServletRequest request) throws WxPayApiException;
 
     /**
      * 处理get请求
+     *
      * @param uri
      * @return
      */
-    String handleGetRequest(String uri) throws IOException;
+    String handleGetRequest(String uri) throws WxPayApiException;
 
     /**
      * 处理post请求
@@ -120,7 +122,7 @@ public interface WxPayService {
      * @param requestData
      * @return
      */
-    String handlePostRequest(String uri, String requestData) throws IOException;
+    String handlePostRequest(String uri, String requestData) throws WxPayApiException;
 
     /**
      * 处理不需要验签的get请求
@@ -128,5 +130,5 @@ public interface WxPayService {
      * @param downloadUrl
      * @return
      */
-    String handleGetRequestForNoSign(String downloadUrl) throws IOException;
+    String handleGetRequestForNoSign(String downloadUrl) throws WxPayApiException;
 }
