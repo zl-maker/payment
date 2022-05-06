@@ -131,8 +131,8 @@ public class WxPayConfig {
         // 微信支付验证器
         WechatPay2Validator wechatPay2Validator = new WechatPay2Validator(verifier);
         WechatPayHttpClientBuilder builder = WechatPayHttpClientBuilder.create().withMerchant(mchId, mchSerialNo, privateKey).withValidator(wechatPay2Validator);
-
         // 通过WechatPayHttpClientBuilder构造的HttpClient，会自动的处理签名和验签，并进行证书自动更新
+
         return builder.build();
     }
 

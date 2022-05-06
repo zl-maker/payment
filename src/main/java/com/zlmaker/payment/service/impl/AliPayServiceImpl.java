@@ -1,5 +1,6 @@
 package com.zlmaker.payment.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
@@ -90,7 +91,6 @@ public class AliPayServiceImpl
         }
         log.error(response.getSubMsg());
         throw new AlipayApiException(response.getSubMsg());
-
     }
 
 
@@ -102,6 +102,7 @@ public class AliPayServiceImpl
      * @throws AlipayApiException
      */
     @Override
+    @Transactional(rollbackFor = AlipayApiException.class)
     public void closeOrder(String orderNo, OrderStatus orderStatus) throws AlipayApiException {
         AlipayTradeCloseRequest request = new AlipayTradeCloseRequest();
         JSONObject bizContent = new JSONObject();
@@ -126,9 +127,8 @@ public class AliPayServiceImpl
      * @param orderNo
      * @return
      */
-    @SneakyThrows
     @Override
-    public String queryOrder(String orderNo) {
+    public String queryOrder(String orderNo) throws AlipayApiException {
         AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
         JSONObject bizContent = new JSONObject();
         bizContent.put("out_trade_no", orderNo);
@@ -138,7 +138,7 @@ public class AliPayServiceImpl
             return response.getBody();
         }
         log.error(response.getSubMsg());
-        return null;
+        throw new AlipayApiException(response.getSubMsg());
     }
 
     /**
@@ -166,8 +166,7 @@ public class AliPayServiceImpl
             orderInfoService.updateStatusByOrderNo(orderNo, OrderStatus.SUCCESS);
             // 记录支付日志
             BigDecimal totalAmount = tradeQueryResponse.getBigDecimal("total_amount");
-            Map<String, String> map = tradeQueryResponse.toJavaObject(Map.class);
-            paymentInfoService.createPaymentInfoForAliPay(orderNo, totalAmount, tradeStatus, map);
+            paymentInfoService.createPaymentInfoForAliPay(orderNo, totalAmount, tradeStatus, tradeQueryResponse);
         }
         if (AliPayTradeState.NOTPAY.getType().equals(tradeStatus)) {
             log.error("核实订单未支付");
@@ -214,7 +213,6 @@ public class AliPayServiceImpl
                     AliPayTradeState.REFUND_SUCCESS.getType());
 
         } else {
-            log.error("退款失败");
             //更新订单状态
             orderInfoService.updateStatusByOrderNo(orderNo, OrderStatus.REFUND_ABNORMAL);
             //更新退款单
@@ -222,6 +220,7 @@ public class AliPayServiceImpl
                     refundInfo.getRefundNo(),
                     response.getBody(),
                     AliPayTradeState.REFUND_ERROR.getType());
+            log.error("退款失败");
             throw new AlipayApiException("退款失败");
         }
     }
@@ -345,7 +344,7 @@ public class AliPayServiceImpl
                     // 更新订单状态
                     orderInfoService.updateStatusByOrderNo(outTradeNo, OrderStatus.SUCCESS);
                     // 记录支付日志
-                    paymentInfoService.createPaymentInfoForAliPay(outTradeNo, totalAmount, tradeStatus, requestParams);
+                    paymentInfoService.createPaymentInfoForAliPay(outTradeNo, totalAmount, tradeStatus, JSONObject.parseObject(JSON.toJSONString(requestParams)));
                 }
             } finally {
                 lock.unlock();

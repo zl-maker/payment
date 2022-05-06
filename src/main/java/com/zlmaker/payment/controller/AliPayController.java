@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * @author zl-maker
+ */
 @CrossOrigin
 @RestController
 @RequestMapping("/api/ali-pay")
@@ -36,6 +39,7 @@ public class AliPayController {
         String form = aliPayService.tradeCreate(productId);
         return ResponseResult.success("下单成功", form);
     }
+
 
     @SneakyThrows
     @ApiOperation("支付通知")
@@ -60,7 +64,7 @@ public class AliPayController {
 
     @ApiOperation("查询订单：测试专用")
     @GetMapping("/trade/query/{orderNo}")
-    public ResponseResult queryOrder(@PathVariable String orderNo) {
+    public ResponseResult queryOrder(@PathVariable String orderNo) throws AlipayApiException {
         String result = aliPayService.queryOrder(orderNo);
         return ResponseResult.success("查询订单成功", result);
     }

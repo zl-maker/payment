@@ -37,7 +37,7 @@ public interface AliPayService {
      * @param orderNo
      * @return String
      */
-    String queryOrder(String orderNo);
+    String queryOrder(String orderNo) throws AlipayApiException;
 
     /**
      * 检查订单状态

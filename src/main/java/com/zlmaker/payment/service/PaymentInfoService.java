@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.zlmaker.payment.pojo.PaymentInfo;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 /**
  * @author zl-maker
@@ -22,10 +21,11 @@ public interface PaymentInfoService
 
     /**
      * 记录支付日志
-     *  @param orderNo
+     *
+     * @param orderNo
      * @param totalAmount
      * @param tradeStatus
      * @param requestParams
      */
-    void createPaymentInfoForAliPay(String orderNo, BigDecimal totalAmount, String tradeStatus, Map<String, String> requestParams);
+    void createPaymentInfoForAliPay(String orderNo, BigDecimal totalAmount, String tradeStatus, JSONObject requestParams);
 }

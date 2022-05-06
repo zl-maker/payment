@@ -10,7 +10,6 @@ import com.zlmaker.payment.util.WxTotalFeeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 /**
  * @author zl-maker
@@ -50,10 +49,10 @@ public class PaymentInfoServiceImpl
      * @param requestParams
      */
     @Override
-    public void createPaymentInfoForAliPay(String orderNo, BigDecimal totalAmount, String tradeStatus, Map<String, String> requestParams) {
+    public void createPaymentInfoForAliPay(String orderNo, BigDecimal totalAmount, String tradeStatus, JSONObject requestParams) {
         String paramsContent = JSONObject.toJSONString(requestParams);
         // 封装日志对象
-        PaymentInfo paymentInfo = new PaymentInfo(orderNo, requestParams.get("transaction_id"), PayType.ALIPAY.getType(), "电脑网站支付", tradeStatus, totalAmount, paramsContent);
+        PaymentInfo paymentInfo = new PaymentInfo(orderNo, requestParams.getString("transaction_id"), PayType.ALIPAY.getType(), "电脑网站支付", tradeStatus, totalAmount, paramsContent);
         baseMapper.insert(paymentInfo);
     }
 }
