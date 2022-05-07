@@ -1,5 +1,7 @@
 package com.zlmaker.payment.pojo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,18 +17,22 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ApiModel(value = "全局统一返回结果")
 public class ResponseResult {
     /**
      * 状态码
      */
+    @ApiModelProperty(value = "状态码")
     private Integer code;
     /**
      * 响应消息
      */
+    @ApiModelProperty(value = "返回消息")
     private String message;
     /**
      * 响应数据
      */
+    @ApiModelProperty(value = "返回数据")
     private Object data;
 
     /**
