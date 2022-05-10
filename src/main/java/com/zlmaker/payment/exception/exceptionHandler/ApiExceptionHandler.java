@@ -1,4 +1,4 @@
-package com.zlmaker.payment.exceptionHandler;
+package com.zlmaker.payment.exception.exceptionHandler;
 
 import com.alipay.api.AlipayApiException;
 import com.zlmaker.payment.exception.WxPayApiException;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * 全局异常处理
  *
  * @author zl-maker
- * @packgaeName com.zlmaker.payment.exceptionHandler
+ * @packgaeName com.zlmaker.payment.exception.exceptionHandler
  * @className GlobalExceptionHandler
  * @date 2022/5/1 下午11:03
  */
