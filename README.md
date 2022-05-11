@@ -51,40 +51,42 @@ payment是集成微信支付V3和支付宝支付的开源支付系统，使用Sp
 |      knife4j       |     Swagger ui     |    2.0.7     |
 
 ## 项目结构
+```bash
 
->   ├── payment-front
->   │   ├── public
->   │   └── src
->   │       ├── api -- 后端api接口
->   │       ├── assets -- 静态资源
->   │       │   ├── css
->   │       │   └── img
->   │       ├── components -- 公共组件
->   │       ├── router -- 前端路由
->   │       ├── utils -- 封装的工具
->   │       └── views -- 页面
->
->   ├── payment
->   └── src
->   │   └── main
->   │       ├── java
->   │       │   └── com
->   │       │       └── zlmaker
->   │       │           └── payment
->   │       │               ├── config -- 全局配置
->   │       │               ├── constant -- 全局常量
->   │       │               ├── controller -- 表示层
->   │       │               ├── enums -- 支付枚举
->   │       │               ├── exception -- 异常
->   │       │               │   └── exceptionHandler -- 异常处理
->   │       │               ├── mapper -- 数据层
->   │       │               ├── pojo -- 实体
->   │       │               ├── service -- 业务层
->   │       │               │   └── impl
->   │       │               ├── task -- 定时任务
->   │       │               └── util -- 工具
->   │       └── resources  -- 资源
->   │           └── mapper -- SQL
+   ├── payment-front
+   │   ├── public
+   │   └── src
+   │       ├── api -- 后端api接口
+   │       ├── assets -- 静态资源
+   │       │   ├── css
+   │       │   └── img
+   │       ├── components -- 公共组件
+   │       ├── router -- 前端路由
+   │       ├── utils -- 封装的工具
+   │       └── views -- 页面
+
+   ├── payment
+   └── src
+   │   └── main
+   │       ├── java
+   │       │   └── com
+   │       │       └── zlmaker
+   │       │           └── payment
+   │       │               ├── config -- 全局配置
+   │       │               ├── constant -- 全局常量
+   │       │               ├── controller -- 表示层
+   │       │               ├── enums -- 支付枚举
+   │       │               ├── exception -- 异常
+   │       │               │   └── exceptionHandler -- 异常处理
+   │       │               ├── mapper -- 数据层
+   │       │               ├── pojo -- 实体
+   │       │               ├── service -- 业务层
+   │       │               │   └── impl
+   │       │               ├── task -- 定时任务
+   │       │               └── util -- 工具
+   │       └── resources  -- 资源
+   │           └── mapper -- SQL
+```
 
 ## 支付配置
 
