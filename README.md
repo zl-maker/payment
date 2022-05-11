@@ -50,6 +50,42 @@ payment是集成微信支付V3和支付宝支付的开源支付系统，使用Sp
 |   支付宝支付SDK    | 支付宝支付开发环境 | 4.22.110.ALL |
 |      knife4j       |     Swagger ui     |    2.0.7     |
 
+## 项目结构
+
+>   ├── payment-front
+>   │   ├── public
+>   │   └── src
+>   │       ├── api -- 后端api接口
+>   │       ├── assets -- 静态资源
+>   │       │   ├── css
+>   │       │   └── img
+>   │       ├── components -- 公共组件
+>   │       ├── router -- 前端路由
+>   │       ├── utils -- 封装的工具
+>   │       └── views -- 页面
+>
+>   ├── payment
+>   └── src
+>   │   └── main
+>   │       ├── java
+>   │       │   └── com
+>   │       │       └── zlmaker
+>   │       │           └── payment
+>   │       │               ├── config -- 全局配置
+>   │       │               ├── constant -- 全局常量
+>   │       │               ├── controller -- 表示层
+>   │       │               ├── enums -- 支付枚举
+>   │       │               ├── exception -- 异常
+>   │       │               │   └── exceptionHandler -- 异常处理
+>   │       │               ├── mapper -- 数据层
+>   │       │               ├── pojo -- 实体
+>   │       │               ├── service -- 业务层
+>   │       │               │   └── impl
+>   │       │               ├── task -- 定时任务
+>   │       │               └── util -- 工具
+>   │       └── resources  -- 资源
+>   │           └── mapper -- SQL
+
 ## 支付配置
 
 ### 支付宝支付配置
@@ -331,21 +367,11 @@ git clone https://github.com/zl-maker/payment.git
 
 [在线支付优化](https://zl-maker.github.io/2022/05/04/%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98payment/%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98%E4%BC%98%E5%8C%96/)
 
+## payment项目指导
+[payment项目指导](https://zl-maker.github.io/2022/05/04/%E5%9C%A8%E7%BA%BF%E6%94%AF%E4%BB%98payment/payment%E9%A1%B9%E7%9B%AE%E6%8C%87%E5%AF%BC/)
+
 ## 最后结语
 
 欢迎大家积极提issues、pull request，来帮助本项目更加完善。
 
 感谢大家Star本项目！
-
-
-
-
-
-
-
-
-
-
-
-
-
